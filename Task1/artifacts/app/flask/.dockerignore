@@ -1,0 +1,13 @@
+__pycache__/
+**/__pycache__/
+*.pyc
+.git/
+.gitignore
+*.md
+venv/
+.venv/
+artifacts/screens/
+.ipynb_checkpoints/
+*.egg-info/
+dist/
+build/

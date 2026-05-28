@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Horror Story Generator</title>
+
+  <!-- Bootstrap 5 (CSS) -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+
+  <style>
+    :root{
+      --bg0: #07070b;
+      --bg1: #0c0d14;
+      --ink: #e9ecff;
+      --muted: rgba(233,236,255,.72);
+      --accent: #8b5cf6;
+      --accent2: #ef4444;
+      --card: rgba(255,255,255,0.06);
+      --card2: rgba(255,255,255,0.08);
+      --border: rgba(255,255,255,0.12);
+      --shadow: 0 18px 60px rgba(0,0,0,.55);
+    }
+
+    body{
+      background:
+        radial-gradient(1200px 800px at 20% -10%, rgba(139,92,246,.20), transparent 55%),
+        radial-gradient(1000px 700px at 90% 0%, rgba(239,68,68,.16), transparent 55%),
+        radial-gradient(900px 700px at 60% 120%, rgba(56,189,248,.10), transparent 55%),
+        linear-gradient(180deg, var(--bg0), var(--bg1));
+      color: var(--ink);
+      min-height: 100vh;
+    }
+
+    .app-shell{
+      max-width: 1100px;
+    }
+
+    .brand{
+      letter-spacing: .4px;
+      text-transform: uppercase;
+      font-weight: 800;
+    }
+
+    .subtle{
+      color: var(--muted);
+    }
+
+    .glass{
+      background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.04));
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+
+    .form-control, .form-select{
+      background: rgba(0,0,0,.25) !important;
+      border: 1px solid rgba(255,255,255,.14) !important;
+      color: var(--ink) !important;
+    }
+    .form-control::placeholder{
+      color: rgba(233,236,255,.45);
+    }
+    .form-control:focus, .form-select:focus{
+      border-color: rgba(139,92,246,.55) !important;
+      box-shadow: 0 0 0 .25rem rgba(139,92,246,.18) !important;
+    }
+
+    .btn-accent{
+      background: linear-gradient(135deg, rgba(139,92,246,.95), rgba(239,68,68,.85));
+      border: 0;
+      color: white;
+      font-weight: 700;
+    }
+    .btn-accent:hover{
+      filter: brightness(1.05);
+    }
+    .btn-accent:disabled{
+      opacity: .65;
+    }
+
+    .divider{
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.18), transparent);
+    }
+
+    .story-card{
+      background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.04));
+      border: 1px solid rgba(255,255,255,.12);
+      box-shadow: 0 12px 40px rgba(0,0,0,.45);
+      overflow: hidden;
+    }
+
+    .story-meta{
+      color: rgba(233,236,255,.70);
+      font-size: .92rem;
+    }
+
+    .story-text{
+      white-space: pre-wrap;
+      line-height: 1.55;
+      color: rgba(233,236,255,.92);
+    }
+
+    .story-image{
+      width: 100%;
+      height: auto;
+      display: block;
+      border-top: 1px solid rgba(255,255,255,.10);
+    }
+
+    .spinner-overlay{
+      position: absolute;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,.35);
+      backdrop-filter: blur(2px);
+      z-index: 5;
+      border-radius: .75rem;
+    }
+    .spinner-overlay.show{
+      display: flex;
+    }
+
+    .status-pill{
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.20);
+      color: rgba(233,236,255,.78);
+      border-radius: 999px;
+      padding: .25rem .6rem;
+      font-size: .85rem;
+    }
+
+    .mini{
+      font-size: .92rem;
+      color: rgba(233,236,255,.78);
+    }
+
+    .card-actions .btn{
+      border-color: rgba(255,255,255,.14);
+    }
+
+    .toast-container{
+      z-index: 1100;
+    }
+
+    a, a:hover{
+      color: inherit;
+    }
+
+    .kbd{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: .85em;
+      background: rgba(255,255,255,.10);
+      border: 1px solid rgba(255,255,255,.14);
+      padding: .12rem .35rem;
+      border-radius: .35rem;
+      color: rgba(233,236,255,.92);
+    }
+
+    .muted-border{
+      border-color: rgba(255,255,255,.12) !important;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container py-4 py-md-5 app-shell">
+    <header class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
+      <div>
+        <div class="d-flex align-items-center gap-2">
+          <h1 class="h3 mb-0 brand">Horror Story Generator</h1>
+          <span id="healthPill" class="status-pill">Checking API…</span>
+        </div>
+        <div class="subtle mt-1">Type a location. We’ll conjure something unsettling.</div>
+      </div>
+      <div class="mini">
+        Tip: Press <span class="kbd">Enter</span> to generate.
+      </div>
+    </header>
+
+    <main class="row g-4">
+      <!-- Generator -->
+      <section class="col-12 col-lg-5">
+        <div class="glass rounded-4 p-3 p-md-4 position-relative">
+          <div id="genSpinner" class="spinner-overlay">
+            <div class="text-center">
+              <div class="spinner-border text-light" role="status" aria-label="Loading"></div>
+              <div class="mt-2 subtle">Summoning your story…</div>
+            </div>
+          </div>
+
+          <h2 class="h5 mb-3">Generate a new story</h2>
+
+          <form id="generatorForm" novalidate>
+            <div class="mb-3">
+              <label for="locationInput" class="form-label">Location</label>
+              <input
+                type="text"
+                class="form-control"
+                id="locationInput"
+                name="location"
+                placeholder="e.g., an abandoned lighthouse"
+                autocomplete="off"
+                list="locationSuggestions"
+                required
+              />
+              <datalist id="locationSuggestions"></datalist>
+              <div class="invalid-feedback">Please enter a location.</div>
+              <div class="form-text subtle">We’ll send <code>{ "location": "…" }</code> to <code>/api/generate</code>.</div>
+            </div>
+
+            <div class="d-grid gap-2">
+              <button id="generateBtn" type="submit" class="btn btn-accent btn-lg">
+                Generate
+              </button>
+              <button id="refreshStoriesBtn" type="button" class="btn btn-outline-light muted-border">
+                Refresh previous stories
+              </button>
+            </div>
+          </form>
+
+          <div class="divider my-4"></div>
+
+          <div id="resultArea" class="d-none">
+            <div class="d-flex align-items-center justify-content-between gap-2 mb-2">
+              <h3 class="h6 mb-0">Latest story</h3>
+              <span id="latestMeta" class="story-meta"></span>
+            </div>
+
+            <div class="story-card rounded-4">
+              <div class="p-3 p-md-4">
+                <div id="latestLocation" class="fw-semibold mb-2"></div>
+                <div id="latestStory" class="story-text"></div>
+              </div>
+              <img id="latestImage" class="story-image d-none" alt="Generated horror illustration" />
+            </div>
+
+            <div id="latestActions" class="card-actions d-flex flex-wrap gap-2 mt-3 d-none">
+              <button id="shareBtn" type="button" class="btn btn-sm btn-outline-light muted-border">Share</button>
+              <button id="reportBtn" type="button" class="btn btn-sm btn-outline-danger">Report</button>
+            </div>
+          </div>
+
+          <div id="resultPlaceholder" class="subtle">
+            Your generated story will appear here.
+          </div>
+        </div>
+      </section>
+
+      <!-- Previous Stories -->
+      <section class="col-12 col-lg-7">
+        <div class="glass rounded-4 p-3 p-md-4">
+          <div class="d-flex align-items-center justify-content-between gap-3 mb-3">
+            <h2 class="h5 mb-0">Previously generated</h2>
+            <div class="subtle small">Loaded from <code>/api/stories</code></div>
+          </div>
+
+          <div id="storiesLoading" class="d-flex align-items-center gap-2 subtle d-none">
+            <div class="spinner-border spinner-border-sm text-light" role="status" aria-label="Loading stories"></div>
+            <div>Loading stories…</div>
+          </div>
+
+          <div id="storiesError" class="alert alert-danger d-none mb-3" role="alert"></div>
+
+          <div id="storiesEmpty" class="subtle d-none">
+            No stories yet. Generate one to begin.
+          </div>
+
+          <div id="storiesList" class="row g-3"></div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="mt-4 mt-md-5 subtle small text-center">
+      <div class="divider my-3"></div>
+      <div>Frontend only. Uses relative API routes so it works on any host.</div>
+    </footer>
+  </div>
+
+  <!-- Toasts -->
+  <div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="appToast" class="toast text-bg-dark border-0" role="alert" aria-live="polite" aria-atomic="true">
+      <div class="d-flex">
+        <div id="toastBody" class="toast-body">Message</div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap 5 (JS) -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+          crossorigin="anonymous"></script>
+
+  <script>
+    (function () {
+      'use strict';
+
+      // --- API routes (relative) ---
+      const API = {
+        health: '/health',
+        suggest: '/api/locations/suggest',
+        generate: '/api/generate',
+        stories: '/api/stories',
+        share: (id) => `/api/stories/${encodeURIComponent(id)}/share`,
+        report: (id) => `/api/stories/${encodeURIComponent(id)}/report`
+      };
+
+      // --- DOM ---
+      const generatorForm = document.getElementById('generatorForm');
+      const locationInput = document.getElementById('locationInput');
+      const suggestionsList = document.getElementById('locationSuggestions');
+      const generateBtn = document.getElementById('generateBtn');
+      const refreshStoriesBtn = document.getElementById('refreshStoriesBtn');
+
+      const genSpinner = document.getElementById('genSpinner');
+
+      const resultArea = document.getElementById('resultArea');
+      const resultPlaceholder = document.getElementById('resultPlaceholder');
+      const latestMeta = document.getElementById('latestMeta');
+      const latestLocation = document.getElementById('latestLocation');
+      const latestStory = document.getElementById('latestStory');
+      const latestImage = document.getElementById('latestImage');
+
+      const latestActions = document.getElementById('latestActions');
+      const shareBtn = document.getElementById('shareBtn');
+      const reportBtn = document.getElementById('reportBtn');
+
+      const storiesList = document.getElementById('storiesList');
+      const storiesLoading = document.getElementById('storiesLoading');
+      const storiesEmpty = document.getElementById('storiesEmpty');
+      const storiesError = document.getElementById('storiesError');
+
+      const healthPill = document.getElementById('healthPill');
+
+      // --- Toast ---
+      const toastEl = document.getElementById('appToast');
+      const toastBody = document.getElementById('toastBody');
+      const toast = new bootstrap.Toast(toastEl, { delay: 4500 });
+
+      function showToast(message) {
+        toastBody.textContent = message;
+        toast.show();
+      }
+
+      // --- Helpers ---
+      function setGenerating(isLoading) {
+        genSpinner.classList.toggle('show', isLoading);
+        generateBtn.disabled = isLoading;
+        refreshStoriesBtn.disabled = isLoading;
+        locationInput.disabled = isLoading;
+      }
+
+      function setStoriesLoading(isLoading) {
+        storiesLoading.classList.toggle('d-none', !isLoading);
+      }
+
+      function escapeHtml(str) {
+        const div = document.createElement('div');
+        div.textContent = String(str ?? '');
+        return div.innerHTML;
+      }
+
+      function normalizeStoryPayload(data) {
+        // Attempt to normalize unknown response shapes into a consistent object.
+        // Expected: story text + optional image_url + optional id + location.
+        // We'll accept: {story, image_url, id, location} or {text, ...} or nested variants.
+        const obj = (data && typeof data === 'object') ? data : {};
+        const story =
+          obj.story ?? obj.text ?? obj.content ?? obj.result ?? obj.output ?? obj.generated_story ?? '';
+
+        const image_url =
+          obj.image_url ?? obj.imageUrl ?? obj.image ?? (obj.media && obj.media.image_url) ?? null;
+
+        const id =
+          obj.id ?? obj.story_id ?? obj.storyId ?? (obj.story && obj.story.id) ?? null;
+
+        const location =
+          obj.location ?? obj.place ?? obj.setting ?? null;
+
+        const created_at =
+          obj.created_at ?? obj.createdAt ?? obj.timestamp ?? null;
+
+        return {
+          id: id,
+          location: location,
+          story: story,
+          image_url: image_url,
+          created_at: created_at
+        };
+      }
+
+      function formatMeta(created_at) {
+        if (!created_at) return '';
+        const d = new Date(created_at);
+        if (isNaN(d.getTime())) return '';
+        return d.toLocaleString();
+      }
+
+      function renderLatestStory(storyObj, fallbackLocation) {
+        const location = storyObj.location || fallbackLocation || '';
+        const storyText = storyObj.story || '';
+
+        latestLocation.textContent = location ? `Location: ${location}` : 'Location: (unspecified)';
+        latestStory.textContent = storyText ? storyText : 'No story text returned.';
+
+        const meta = formatMeta(storyObj.created_at);
+        latestMeta.textContent = meta;
+
+        if (storyObj.image_url) {
+          latestImage.src = storyObj.image_url;
+          latestImage.classList.remove('d-none');
+        } else {
+          latestImage.removeAttribute('src');
+          latestImage.classList.add('d-none');
+        }
+
+        // Enable share/report if we have an id
+        if (storyObj.id) {
+          latestActions.classList.remove('d-none');
+          latestActions.dataset.storyId = storyObj.id;
+        } else {
+          latestActions.classList.add('d-none');
+          latestActions.dataset.storyId = '';
+        }
+
+        resultPlaceholder.classList.add('d-none');
+        resultArea.classList.remove('d-none');
+      }
+
+      function renderStoriesList(items) {
+        storiesList.innerHTML = '';
+
+        if (!Array.isArray(items) || items.length === 0) {
+          storiesEmpty.classList.remove('d-none');
+          return;
+        }
+
+        storiesEmpty.classList.add('d-none');
+
+        for (const raw of items) {
+          const st = normalizeStoryPayload(raw);
+          const id = st.id ?? raw?.id ?? raw?.story_id ?? null;
+          const location = st.location ?? raw?.location ?? '';
+          const story = st.story ?? '';
+          const imageUrl = st.image_url ?? null;
+          const created = formatMeta(st.created_at ?? raw?.created_at ?? raw?.createdAt ?? raw?.timestamp);
+
+          const col = document.createElement('div');
+          col.className = 'col-12';
+
+          const card = document.createElement('div');
+          card.className = 'story-card rounded-4';
+
+          const body = document.createElement('div');
+          body.className = 'p-3 p-md-4';
+
+          const top = document.createElement('div');
+          top.className = 'd-flex flex-column flex-md-row justify-content-between gap-2 mb-2';
+
+          const title = document.createElement('div');
+          title.className = 'fw-semibold';
+          title.textContent = location ? location : '(Unknown location)';
+
+          const meta = document.createElement('div');
+          meta.className = 'story-meta';
+          meta.textContent = created || (id ? `ID: ${id}` : '');
+
+          top.appendChild(title);
+          top.appendChild(meta);
+
+          const text = document.createElement('div');
+          text.className = 'story-text';
+          text.textContent = story ? story : 'No story text.';
+
+          body.appendChild(top);
+          body.appendChild(text);
+
+          card.appendChild(body);
+
+          if (imageUrl) {
+            const img = document.createElement('img');
+            img.className = 'story-image';
+            img.alt = 'Generated horror illustration';
+            img.src = imageUrl;
+            card.appendChild(img);
+          }
+
+          // Optional per-card actions if id exists
+          if (id) {
+            const actionsWrap = document.createElement('div');
+            actionsWrap.className = 'px-3 px-md-4 pb-3 pb-md-4 pt-0';
+
+            const actions = document.createElement('div');
+            actions.className = 'card-actions d-flex flex-wrap gap-2';
+
+            const share = document.createElement('button');
+            share.type = 'button';
+            share.className = 'btn btn-sm btn-outline-light muted-border';
+            share.textContent = 'Share';
+            share.addEventListener('click', () => shareStory(id));
+
+            const report = document.createElement('button');
+            report.type = 'button';
+            report.className = 'btn btn-sm btn-outline-danger';
+            report.textContent = 'Report';
+            report.addEventListener('click', () => reportStory(id));
+
+            actions.appendChild(share);
+            actions.appendChild(report);
+            actionsWrap.appendChild(actions);
+            card.appendChild(actionsWrap);
+          }
+
+          col.appendChild(card);
+          storiesList.appendChild(col);
+        }
+      }
+
+      async function fetchJson(url, options = {}) {
+        const opts = {
+          headers: {
+            'Accept': 'application/json',
+            ...(options.headers || {})
+          },
+          ...options
+        };
+
+        let res;
+        try {
+          res = await fetch(url, opts);
+        } catch (err) {
+          throw new Error('Network error. Please check your connection and try again.');
+        }
+
+        let text = '';
+        try { text = await res.text(); } catch (_) {}
+
+        let data = null;
+        if (text) {
+          try { data = JSON.parse(text); } catch (_) { data = text; }
+        }
+
+        if (!res.ok) {
+          const msg = (data && typeof data === 'object' && (data.error || data.message))
+            ? (data.error || data.message)
+            : (typeof data === 'string' && data.trim() ? data : `Request failed (${res.status}).`);
+          throw new Error(msg);
+        }
+
+        return data;
+      }
+
+      // --- API Actions ---
+      async function checkHealth() {
+        try {
+          await fetchJson(API.health, { method: 'GET' });
+          healthPill.textContent = 'API online';
+          healthPill.style.borderColor = 'rgba(34,197,94,.35)';
+          healthPill.style.color = 'rgba(209,250,229,.95)';
+          healthPill.style.background = 'rgba(34,197,94,.12)';
+        } catch (_) {
+          healthPill.textContent = 'API unavailable';
+          healthPill.style.borderColor = 'rgba(239,68,68,.35)';
+          healthPill.style.color = 'rgba(254,226,226,.95)';
+          healthPill.style.background = 'rgba(239,68,68,.12)';
+        }
+      }
+
+      let suggestAbort = null;
+      async function loadSuggestions(q) {
+        if (!q || q.trim().length < 2) {
+          suggestionsList.innerHTML = '';
+          return;
+        }
+
+        if (suggestAbort) suggestAbort.abort();
+        suggestAbort = new AbortController();
+
+        const params = new URLSearchParams({ q: q.trim() });
+        const url = `${API.suggest}?${params.toString()}`;
+
+        try {
+          const data = await fetchJson(url, { method: 'GET', signal: suggestAbort.signal });
+          const list = Array.isArray(data) ? data : (data?.suggestions || data?.locations || []);
+          suggestionsList.innerHTML = '';
+          (list || []).slice(0, 12).forEach(item => {
+            const opt = document.createElement('option');
+            opt.value = String(item);
+            suggestionsList.appendChild(opt);
+          });
+        } catch (err) {
+          // Suggestions are optional; fail silently unless it’s not an abort and user expects feedback.
+          if (err && String(err.message || '').includes('aborted')) return;
+        }
+      }
+
+      async function generateStory(location) {
+        setGenerating(true);
+        try {
+          const payload = { location: location };
+          const data = await fetchJson(API.generate, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+
+          const storyObj = normalizeStoryPayload(data);
+          renderLatestStory(storyObj, location);
+          showToast('Story generated.');
+          await loadStories();
+        } catch (err) {
+          const msg = err?.message || 'Something went wrong while generating your story.';
+          showToast(msg);
+        } finally {
+          setGenerating(false);
+        }
+      }
+
+      async function loadStories() {
+        storiesError.classList.add('d-none');
+        storiesError.textContent = '';
+        setStoriesLoading(true);
+
+        try {
+          const data = await fetchJson(API.stories, { method: 'GET' });
+          const items = Array.isArray(data) ? data : (data?.stories || data?.items || []);
+          renderStoriesList(items);
+        } catch (err) {
+          storiesList.innerHTML = '';
+          storiesEmpty.classList.add('d-none');
+          storiesError.textContent = err?.message || 'Unable to load previous stories.';
+          storiesError.classList.remove('d-none');
+        } finally {
+          setStoriesLoading(false);
+        }
+      }
+
+      async function shareStory(storyId) {
+        if (!storyId) return;
+        try {
+          const data = await fetchJson(API.share(storyId), { method: 'POST' });
+          const url = (data && typeof data === 'object' && (data.url || data.share_url || data.link)) ? (data.url || data.share_url || data.link) : null;
+
+          if (url && typeof url === 'string') {
+            try {
+              await navigator.clipboard.writeText(url);
+              showToast('Share link copied to clipboard.');
+            } catch (_) {
+              showToast('Share link generated. (Clipboard permission denied.)');
+            }
+            window.open(url, '_blank', 'noopener');
+          } else {
+            showToast('Story shared.');
+          }
+        } catch (err) {
+          showToast(err?.message || 'Unable to share this story right now.');
+        }
+      }
+
+      async function reportStory(storyId) {
+        if (!storyId) return;
+        const ok = confirm('Report this story for review?');
+        if (!ok) return;
+
+        try {
+          await fetchJson(API.report(storyId), { method: 'POST' });
+          showToast('Reported. Thank you for helping keep things safe.');
+        } catch (err) {
+          showToast(err?.message || 'Unable to report this story right now.');
+        }
+      }
+
+      // --- Events ---
+      generatorForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        // Client-side validation
+        const val = (locationInput.value || '').trim();
+        if (!val) {
+          locationInput.classList.add('is-invalid');
+          locationInput.focus();
+          return;
+        }
+        locationInput.classList.remove('is-invalid');
+
+        generateStory(val);
+      });
+
+      locationInput.addEventListener('input', () => {
+        const val = (locationInput.value || '').trim();
+        if (val) locationInput.classList.remove('is-invalid');
+        loadSuggestions(val);
+      });
+
+      refreshStoriesBtn.addEventListener('click', () => {
+        loadStories();
+      });
+
+      shareBtn.addEventListener('click', () => {
+        const id = latestActions.dataset.storyId;
+        shareStory(id);
+      });
+
+      reportBtn.addEventListener('click', () => {
+        const id = latestActions.dataset.storyId;
+        reportStory(id);
+      });
+
+      // --- Init ---
+      (async function init() {
+        await checkHealth();
+        await loadStories();
+      })();
+    })();
+  </script>
+</body>
+</html>
