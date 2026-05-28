@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: ["main"]
+    branches: [main]
   pull_request:
-    branches: ["main"]
+    branches: [main]
 
 jobs:
   lint:
@@ -12,8 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
@@ -21,7 +20,7 @@ jobs:
         run: pip install flake8
 
       - name: Run flake8
-        run: flake8 artifacts/app/flask/main.py --ignore=E501,F403,F405,W503,E402
+        run: flake8 Task1/artifacts/app/flask/main.py --ignore=E501,F403,F405,W503,E402
 
   build-and-push:
     needs: lint
@@ -42,6 +41,6 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: artifacts/app/flask/
+          context: Task1/artifacts/app/flask/
           push: true
           tags: ghcr.io/${{ github.repository_owner }}/horror-story-generator:latest
