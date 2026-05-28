@@ -1,1 +1,0 @@
-APIFREE request failed: HTTPSConnectionPool(host='api.apifree.ai', port=443): Read timed out. (read timeout=120)
