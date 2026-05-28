@@ -1,8 +1,8 @@
 gitignore
 # Python bytecode / cache
 __pycache__/
-*.py[cod]
 *.pyc
+*.py[cod]
 .Python
 
 # Virtual environments
@@ -13,10 +13,10 @@ venv/
 # Jupyter
 .ipynb_checkpoints/
 
-# Build / packaging
-*.egg-info/
-dist/
+# Build / distribution
 build/
+dist/
+*.egg-info/
 
 # Logs
 *.log
