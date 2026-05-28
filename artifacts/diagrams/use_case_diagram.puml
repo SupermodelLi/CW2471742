@@ -1,0 +1,20 @@
+@startuml
+actor "Casual Reader" as CasualReader
+actor "Travel Blogger" as TravelBlogger
+actor "User" as User
+actor "Moderator" as Moderator
+
+rectangle "Horror Story Generator" {
+  usecase "Generate story and image" as UC1
+  usecase "Set length and tone" as UC2
+  usecase "Copy and share results" as UC3
+  usecase "Report unsafe content" as UC4
+  usecase "Moderate generated content" as UC5
+}
+
+CasualReader -- UC1
+TravelBlogger -- UC2
+CasualReader -- UC3
+User -- UC4
+Moderator -- UC5
+@enduml
