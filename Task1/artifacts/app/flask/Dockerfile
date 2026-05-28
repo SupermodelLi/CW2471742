@@ -1,21 +1,21 @@
 FROM python:3.11-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    PIP_NO_CACHE_DIR=1
+    PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
-RUN addgroup --system app && adduser --system --ingroup app app
+RUN set -eux; \
+    addgroup --system --gid 10001 app; \
+    adduser  --system --uid 10001 --ingroup app --home /app --shell /usr/sbin/nologin app
 
-COPY requirements.txt ./
+COPY requirements.txt /app/requirements.txt
 
-RUN pip install --upgrade pip && \
-    pip install -r requirements.txt
+RUN set -eux; \
+    python -m pip install --no-cache-dir --upgrade pip setuptools wheel; \
+    python -m pip install --no-cache-dir -r /app/requirements.txt
 
-COPY main.py index.html utils.py ./
-
-RUN chown -R app:app /app
+COPY --chown=app:app main.py utils.py index.html /app/
 
 USER app
 
