@@ -1,722 +1,648 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Horror Story Generator</title>
-
-  <!-- Bootstrap 5 (CSS) -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+  <meta name="description" content="Generate chilling horror stories from a location prompt. View your generated story history." />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
 
   <style>
     :root{
-      --bg0: #07070b;
-      --bg1: #0c0d14;
-      --ink: #e9ecff;
-      --muted: rgba(233,236,255,.72);
-      --accent: #8b5cf6;
-      --accent2: #ef4444;
-      --card: rgba(255,255,255,0.06);
-      --card2: rgba(255,255,255,0.08);
-      --border: rgba(255,255,255,0.12);
-      --shadow: 0 18px 60px rgba(0,0,0,.55);
+      --bg0:#07070a;
+      --bg1:#0e0f14;
+      --card:#11131b;
+      --muted:#a6a9b6;
+      --border: rgba(255,255,255,.10);
+      --accent:#b31237;
+      --accent2:#7c101f;
     }
 
     body{
       background:
-        radial-gradient(1200px 800px at 20% -10%, rgba(139,92,246,.20), transparent 55%),
-        radial-gradient(1000px 700px at 90% 0%, rgba(239,68,68,.16), transparent 55%),
-        radial-gradient(900px 700px at 60% 120%, rgba(56,189,248,.10), transparent 55%),
+        radial-gradient(1000px 500px at 10% -10%, rgba(179,18,55,.22), transparent 60%),
+        radial-gradient(900px 500px at 100% 10%, rgba(123,16,31,.18), transparent 60%),
         linear-gradient(180deg, var(--bg0), var(--bg1));
-      color: var(--ink);
-      min-height: 100vh;
+      color:#e9e9ef;
+      min-height:100vh;
     }
 
-    .app-shell{
-      max-width: 1100px;
+    .navbar{
+      background: rgba(10,10,14,.65);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
     }
 
-    .brand{
-      letter-spacing: .4px;
-      text-transform: uppercase;
-      font-weight: 800;
+    .brand-dot{
+      width:10px;height:10px;border-radius:50%;
+      background: linear-gradient(135deg, var(--accent), #ff3a5f);
+      display:inline-block;
+      box-shadow: 0 0 0 4px rgba(179,18,55,.14);
+      margin-right:.5rem;
+      transform: translateY(-1px);
     }
 
-    .subtle{
-      color: var(--muted);
+    .hero{
+      padding-top: 1.75rem;
+      padding-bottom: 1.25rem;
     }
 
     .glass{
-      background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.04));
+      background: rgba(17,19,27,.72);
       border: 1px solid var(--border);
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(10px);
+      border-radius: 1rem;
+      box-shadow: 0 18px 50px rgba(0,0,0,.45);
     }
 
     .form-control, .form-select{
-      background: rgba(0,0,0,.25) !important;
-      border: 1px solid rgba(255,255,255,.14) !important;
-      color: var(--ink) !important;
+      background: rgba(255,255,255,.04);
+      border-color: rgba(255,255,255,.12);
+      color: #e9e9ef;
     }
-    .form-control::placeholder{
-      color: rgba(233,236,255,.45);
-    }
-    .form-control:focus, .form-select:focus{
-      border-color: rgba(139,92,246,.55) !important;
-      box-shadow: 0 0 0 .25rem rgba(139,92,246,.18) !important;
+    .form-control::placeholder{ color: rgba(233,233,239,.55); }
+    .form-control:focus{
+      background: rgba(255,255,255,.06);
+      color: #fff;
+      border-color: rgba(179,18,55,.55);
+      box-shadow: 0 0 0 .25rem rgba(179,18,55,.18);
     }
 
     .btn-accent{
-      background: linear-gradient(135deg, rgba(139,92,246,.95), rgba(239,68,68,.85));
-      border: 0;
-      color: white;
-      font-weight: 700;
+      background: linear-gradient(180deg, var(--accent), var(--accent2));
+      border: 1px solid rgba(255,255,255,.12);
+      color:#fff;
     }
     .btn-accent:hover{
       filter: brightness(1.05);
+      border-color: rgba(255,255,255,.18);
+      color:#fff;
     }
     .btn-accent:disabled{
-      opacity: .65;
+      opacity:.75;
     }
 
-    .divider{
-      height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,.18), transparent);
+    .hint{
+      color: var(--muted);
+      font-size: .95rem;
     }
 
-    .story-card{
-      background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.04));
-      border: 1px solid rgba(255,255,255,.12);
-      box-shadow: 0 12px 40px rgba(0,0,0,.45);
+    .suggestions{
+      position: absolute;
+      top: calc(100% + .35rem);
+      left: 0;
+      right: 0;
+      z-index: 20;
+      background: rgba(10,10,14,.92);
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: .75rem;
       overflow: hidden;
+      box-shadow: 0 18px 45px rgba(0,0,0,.55);
+    }
+    .suggestions .list-group-item{
+      background: transparent;
+      color: #e9e9ef;
+      border-color: rgba(255,255,255,.08);
+      cursor: pointer;
+    }
+    .suggestions .list-group-item:hover,
+    .suggestions .list-group-item:focus{
+      background: rgba(179,18,55,.12);
     }
 
-    .story-meta{
-      color: rgba(233,236,255,.70);
-      font-size: .92rem;
+    .story-img{
+      width: 100%;
+      height: auto;
+      border-radius: .9rem;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.04);
     }
 
     .story-text{
       white-space: pre-wrap;
       line-height: 1.55;
-      color: rgba(233,236,255,.92);
+      font-size: 1.02rem;
     }
 
-    .story-image{
-      width: 100%;
-      height: auto;
-      display: block;
-      border-top: 1px solid rgba(255,255,255,.10);
+    .meta{
+      color: var(--muted);
+      font-size: .9rem;
     }
 
-    .spinner-overlay{
-      position: absolute;
-      inset: 0;
+    .card{
+      background: rgba(17,19,27,.70);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 1rem;
+      box-shadow: 0 10px 30px rgba(0,0,0,.35);
+    }
+
+    .card .card-header{
+      background: rgba(255,255,255,.02);
+      border-bottom: 1px solid rgba(255,255,255,.10);
+      border-top-left-radius: 1rem;
+      border-top-right-radius: 1rem;
+    }
+
+    .divider{
+      height: 1px;
+      background: rgba(255,255,255,.10);
+      margin: 1rem 0;
+    }
+
+    .spinner-wrap{
       display: none;
-      align-items: center;
-      justify-content: center;
-      background: rgba(0,0,0,.35);
-      backdrop-filter: blur(2px);
-      z-index: 5;
-      border-radius: .75rem;
     }
-    .spinner-overlay.show{
-      display: flex;
+    .spinner-wrap.active{
+      display: inline-flex;
+      align-items: center;
+      gap: .6rem;
     }
 
     .status-pill{
-      border: 1px solid rgba(255,255,255,.14);
-      background: rgba(0,0,0,.20);
-      color: rgba(233,236,255,.78);
-      border-radius: 999px;
+      display:inline-flex;
+      align-items:center;
+      gap:.45rem;
       padding: .25rem .6rem;
+      border-radius: 999px;
       font-size: .85rem;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.04);
+      color: var(--muted);
+    }
+    .status-dot{
+      width:8px;height:8px;border-radius:50%;
+      background: #7a7f91;
+      box-shadow: 0 0 0 3px rgba(122,127,145,.12);
+    }
+    .status-ok .status-dot{ background: #28a745; box-shadow: 0 0 0 3px rgba(40,167,69,.15); }
+    .status-bad .status-dot{ background: #dc3545; box-shadow: 0 0 0 3px rgba(220,53,69,.15); }
+
+    footer{
+      color: rgba(233,233,239,.55);
+      border-top: 1px solid rgba(255,255,255,.10);
+      margin-top: 2rem;
+      padding: 1.25rem 0;
     }
 
-    .mini{
-      font-size: .92rem;
-      color: rgba(233,236,255,.78);
-    }
-
-    .card-actions .btn{
-      border-color: rgba(255,255,255,.14);
-    }
-
-    .toast-container{
-      z-index: 1100;
-    }
-
-    a, a:hover{
-      color: inherit;
-    }
-
-    .kbd{
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      font-size: .85em;
-      background: rgba(255,255,255,.10);
-      border: 1px solid rgba(255,255,255,.14);
-      padding: .12rem .35rem;
-      border-radius: .35rem;
-      color: rgba(233,236,255,.92);
-    }
-
-    .muted-border{
-      border-color: rgba(255,255,255,.12) !important;
+    .visually-hidden-focusable:active, .visually-hidden-focusable:focus{
+      position: static !important;
+      width: auto !important;
+      height: auto !important;
+      margin: 0 !important;
+      overflow: visible !important;
+      clip: auto !important;
+      white-space: normal !important;
     }
   </style>
 </head>
 
 <body>
-  <div class="container py-4 py-md-5 app-shell">
-    <header class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
-      <div>
-        <div class="d-flex align-items-center gap-2">
-          <h1 class="h3 mb-0 brand">Horror Story Generator</h1>
-          <span id="healthPill" class="status-pill">Checking API…</span>
-        </div>
-        <div class="subtle mt-1">Type a location. We’ll conjure something unsettling.</div>
+  <a class="visually-hidden-focusable" href="#main">Skip to content</a>
+
+  <nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container">
+      <span class="navbar-brand fw-semibold">
+        <span class="brand-dot" aria-hidden="true"></span>
+        Horror Story Generator
+      </span>
+
+      <div class="ms-auto d-flex align-items-center gap-2">
+        <span id="healthPill" class="status-pill" role="status" aria-live="polite" aria-label="Service status">
+          <span class="status-dot" aria-hidden="true"></span>
+          <span id="healthText">Checking service…</span>
+        </span>
       </div>
-      <div class="mini">
-        Tip: Press <span class="kbd">Enter</span> to generate.
-      </div>
-    </header>
+    </div>
+  </nav>
 
-    <main class="row g-4">
-      <!-- Generator -->
-      <section class="col-12 col-lg-5">
-        <div class="glass rounded-4 p-3 p-md-4 position-relative">
-          <div id="genSpinner" class="spinner-overlay">
-            <div class="text-center">
-              <div class="spinner-border text-light" role="status" aria-label="Loading"></div>
-              <div class="mt-2 subtle">Summoning your story…</div>
-            </div>
-          </div>
+  <main id="main" class="container hero">
+    <div class="row g-4">
+      <div class="col-12 col-lg-5">
+        <div class="glass p-4 position-relative">
+          <h1 class="h4 mb-2">Set the scene</h1>
+          <p class="hint mb-3">Type a location. We’ll generate a short horror story and an image to match.</p>
 
-          <h2 class="h5 mb-3">Generate a new story</h2>
+          <div id="alertArea" class="mb-3" aria-live="polite"></div>
 
-          <form id="generatorForm" novalidate>
-            <div class="mb-3">
+          <form id="genForm" novalidate>
+            <div class="mb-3 position-relative">
               <label for="locationInput" class="form-label">Location</label>
               <input
                 type="text"
                 class="form-control"
                 id="locationInput"
                 name="location"
-                placeholder="e.g., an abandoned lighthouse"
+                placeholder="e.g., an abandoned seaside motel"
                 autocomplete="off"
-                list="locationSuggestions"
+                aria-describedby="locationHelp"
                 required
               />
-              <datalist id="locationSuggestions"></datalist>
+              <div id="locationHelp" class="form-text hint">Tip: be specific (weather, time, vibe).</div>
+
+              <div id="suggestionsBox" class="suggestions d-none" role="listbox" aria-label="Location suggestions">
+                <div id="suggestionsList" class="list-group list-group-flush"></div>
+              </div>
+
               <div class="invalid-feedback">Please enter a location.</div>
-              <div class="form-text subtle">We’ll send <code>{ "location": "…" }</code> to <code>/api/generate</code>.</div>
             </div>
 
-            <div class="d-grid gap-2">
-              <button id="generateBtn" type="submit" class="btn btn-accent btn-lg">
+            <div class="d-flex align-items-center gap-2">
+              <button id="generateBtn" type="submit" class="btn btn-accent px-4">
                 Generate
               </button>
-              <button id="refreshStoriesBtn" type="button" class="btn btn-outline-light muted-border">
-                Refresh previous stories
-              </button>
+
+              <span id="spinnerWrap" class="spinner-wrap" aria-live="polite" aria-label="Generating story">
+                <span class="spinner-border spinner-border-sm text-light" role="status" aria-hidden="true"></span>
+                <span class="hint">Generating…</span>
+              </span>
             </div>
           </form>
 
-          <div class="divider my-4"></div>
+          <div class="divider"></div>
 
-          <div id="resultArea" class="d-none">
-            <div class="d-flex align-items-center justify-content-between gap-2 mb-2">
-              <h3 class="h6 mb-0">Latest story</h3>
-              <span id="latestMeta" class="story-meta"></span>
+          <div class="hint">
+            Your latest story will appear on the right. Previous stories appear below.
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-lg-7">
+        <div class="card">
+          <div class="card-header d-flex align-items-center justify-content-between">
+            <div>
+              <div class="fw-semibold">Latest generation</div>
+              <div id="latestMeta" class="meta">No story generated yet.</div>
             </div>
+          </div>
+          <div class="card-body">
+            <div id="latestEmpty" class="hint">Enter a location and click Generate.</div>
 
-            <div class="story-card rounded-4">
-              <div class="p-3 p-md-4">
-                <div id="latestLocation" class="fw-semibold mb-2"></div>
-                <div id="latestStory" class="story-text"></div>
+            <div id="latestContent" class="d-none">
+              <div class="row g-3 align-items-start">
+                <div class="col-12">
+                  <img id="latestImage" class="story-img" alt="Generated horror scene" loading="lazy" />
+                </div>
+                <div class="col-12">
+                  <div id="latestStory" class="story-text"></div>
+                </div>
               </div>
-              <img id="latestImage" class="story-image d-none" alt="Generated horror illustration" />
-            </div>
-
-            <div id="latestActions" class="card-actions d-flex flex-wrap gap-2 mt-3 d-none">
-              <button id="shareBtn" type="button" class="btn btn-sm btn-outline-light muted-border">Share</button>
-              <button id="reportBtn" type="button" class="btn btn-sm btn-outline-danger">Report</button>
             </div>
           </div>
-
-          <div id="resultPlaceholder" class="subtle">
-            Your generated story will appear here.
-          </div>
         </div>
-      </section>
+      </div>
 
-      <!-- Previous Stories -->
-      <section class="col-12 col-lg-7">
-        <div class="glass rounded-4 p-3 p-md-4">
-          <div class="d-flex align-items-center justify-content-between gap-3 mb-3">
-            <h2 class="h5 mb-0">Previously generated</h2>
-            <div class="subtle small">Loaded from <code>/api/stories</code></div>
+      <div class="col-12">
+        <div class="d-flex align-items-end justify-content-between gap-3 flex-wrap">
+          <div>
+            <h2 class="h5 mb-1">Story history</h2>
+            <div class="meta">All stored stories from the server.</div>
           </div>
-
-          <div id="storiesLoading" class="d-flex align-items-center gap-2 subtle d-none">
-            <div class="spinner-border spinner-border-sm text-light" role="status" aria-label="Loading stories"></div>
-            <div>Loading stories…</div>
-          </div>
-
-          <div id="storiesError" class="alert alert-danger d-none mb-3" role="alert"></div>
-
-          <div id="storiesEmpty" class="subtle d-none">
-            No stories yet. Generate one to begin.
-          </div>
-
-          <div id="storiesList" class="row g-3"></div>
+          <button id="refreshHistoryBtn" class="btn btn-outline-light btn-sm" type="button">
+            Refresh
+          </button>
         </div>
-      </section>
-    </main>
 
-    <footer class="mt-4 mt-md-5 subtle small text-center">
-      <div class="divider my-3"></div>
-      <div>Frontend only. Uses relative API routes so it works on any host.</div>
-    </footer>
-  </div>
+        <div class="divider"></div>
 
-  <!-- Toasts -->
-  <div class="toast-container position-fixed bottom-0 end-0 p-3">
-    <div id="appToast" class="toast text-bg-dark border-0" role="alert" aria-live="polite" aria-atomic="true">
-      <div class="d-flex">
-        <div id="toastBody" class="toast-body">Message</div>
-        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        <div id="historyEmpty" class="hint">No stories found yet.</div>
+        <div id="historyGrid" class="row g-3 mt-0"></div>
       </div>
     </div>
-  </div>
 
-  <!-- Bootstrap 5 (JS) -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-          integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
-          crossorigin="anonymous"></script>
+    <footer class="mt-4">
+      <div class="container px-0">
+        <div class="d-flex justify-content-between flex-wrap gap-2">
+          <div>Frontend demo for horror story generation.</div>
+          <div class="text-end">Built with Bootstrap 5.</div>
+        </div>
+      </div>
+    </footer>
+  </main>
 
   <script>
-    (function () {
-      'use strict';
+    'use strict';
 
-      // --- API routes (relative) ---
-      const API = {
-        health: '/health',
-        suggest: '/api/locations/suggest',
-        generate: '/api/generate',
-        stories: '/api/stories',
-        share: (id) => `/api/stories/${encodeURIComponent(id)}/share`,
-        report: (id) => `/api/stories/${encodeURIComponent(id)}/report`
+    const els = {
+      genForm: document.getElementById('genForm'),
+      locationInput: document.getElementById('locationInput'),
+      generateBtn: document.getElementById('generateBtn'),
+      spinnerWrap: document.getElementById('spinnerWrap'),
+      alertArea: document.getElementById('alertArea'),
+
+      latestMeta: document.getElementById('latestMeta'),
+      latestEmpty: document.getElementById('latestEmpty'),
+      latestContent: document.getElementById('latestContent'),
+      latestImage: document.getElementById('latestImage'),
+      latestStory: document.getElementById('latestStory'),
+
+      historyGrid: document.getElementById('historyGrid'),
+      historyEmpty: document.getElementById('historyEmpty'),
+      refreshHistoryBtn: document.getElementById('refreshHistoryBtn'),
+
+      suggestionsBox: document.getElementById('suggestionsBox'),
+      suggestionsList: document.getElementById('suggestionsList'),
+
+      healthPill: document.getElementById('healthPill'),
+      healthText: document.getElementById('healthText'),
+    };
+
+    function escapeHtml(str) {
+      return String(str)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
+
+    function showAlert(message, type = 'danger') {
+      const safe = escapeHtml(message);
+      els.alertArea.innerHTML = `
+        <div class="alert alert-${type} alert-dismissible fade show mb-0" role="alert">
+          ${safe}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      `;
+    }
+
+    function clearAlert() {
+      els.alertArea.innerHTML = '';
+    }
+
+    function setGenerating(isGenerating) {
+      els.generateBtn.disabled = isGenerating;
+      els.locationInput.disabled = isGenerating;
+      els.spinnerWrap.classList.toggle('active', isGenerating);
+    }
+
+    // CRITICAL: backend stores Unix seconds. MUST use new Date(created_at * 1000)
+    function formatMeta(created_at) {
+      const d = new Date(created_at * 1000);
+      if (Number.isNaN(d.getTime())) return 'Unknown time';
+      return d.toLocaleString(undefined, {
+        year: 'numeric',
+        month: 'short',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
+
+    function normalizeStory(item) {
+      // The API guarantees {story, image_url, id, created_at} for generation.
+      // For history, we assume same shape.
+      return {
+        id: item?.id ?? null,
+        story: item?.story ?? '',
+        image_url: item?.image_url ?? '',
+        created_at: item?.created_at ?? null
       };
+    }
 
-      // --- DOM ---
-      const generatorForm = document.getElementById('generatorForm');
-      const locationInput = document.getElementById('locationInput');
-      const suggestionsList = document.getElementById('locationSuggestions');
-      const generateBtn = document.getElementById('generateBtn');
-      const refreshStoriesBtn = document.getElementById('refreshStoriesBtn');
+    function renderLatest(item) {
+      const s = normalizeStory(item);
 
-      const genSpinner = document.getElementById('genSpinner');
+      els.latestEmpty.classList.add('d-none');
+      els.latestContent.classList.remove('d-none');
 
-      const resultArea = document.getElementById('resultArea');
-      const resultPlaceholder = document.getElementById('resultPlaceholder');
-      const latestMeta = document.getElementById('latestMeta');
-      const latestLocation = document.getElementById('latestLocation');
-      const latestStory = document.getElementById('latestStory');
-      const latestImage = document.getElementById('latestImage');
+      const metaParts = [];
+      if (s.id !== null && s.id !== undefined && s.id !== '') metaParts.push(`ID: ${escapeHtml(String(s.id))}`);
+      if (s.created_at !== null && s.created_at !== undefined) metaParts.push(formatMeta(s.created_at));
+      els.latestMeta.textContent = metaParts.length ? metaParts.join(' • ') : 'Latest generation';
 
-      const latestActions = document.getElementById('latestActions');
-      const shareBtn = document.getElementById('shareBtn');
-      const reportBtn = document.getElementById('reportBtn');
-
-      const storiesList = document.getElementById('storiesList');
-      const storiesLoading = document.getElementById('storiesLoading');
-      const storiesEmpty = document.getElementById('storiesEmpty');
-      const storiesError = document.getElementById('storiesError');
-
-      const healthPill = document.getElementById('healthPill');
-
-      // --- Toast ---
-      const toastEl = document.getElementById('appToast');
-      const toastBody = document.getElementById('toastBody');
-      const toast = new bootstrap.Toast(toastEl, { delay: 4500 });
-
-      function showToast(message) {
-        toastBody.textContent = message;
-        toast.show();
+      if (s.image_url) {
+        els.latestImage.src = s.image_url;
+        els.latestImage.alt = 'Generated horror scene';
+        els.latestImage.classList.remove('d-none');
+      } else {
+        els.latestImage.removeAttribute('src');
+        els.latestImage.alt = 'No image available';
       }
 
-      // --- Helpers ---
-      function setGenerating(isLoading) {
-        genSpinner.classList.toggle('show', isLoading);
-        generateBtn.disabled = isLoading;
-        refreshStoriesBtn.disabled = isLoading;
-        locationInput.disabled = isLoading;
+      els.latestStory.textContent = s.story || '(No story returned.)';
+    }
+
+    function renderHistory(stories) {
+      els.historyGrid.innerHTML = '';
+      const arr = Array.isArray(stories) ? stories : [];
+
+      if (arr.length === 0) {
+        els.historyEmpty.classList.remove('d-none');
+        return;
       }
+      els.historyEmpty.classList.add('d-none');
 
-      function setStoriesLoading(isLoading) {
-        storiesLoading.classList.toggle('d-none', !isLoading);
-      }
-
-      function escapeHtml(str) {
-        const div = document.createElement('div');
-        div.textContent = String(str ?? '');
-        return div.innerHTML;
-      }
-
-      function normalizeStoryPayload(data) {
-        // Attempt to normalize unknown response shapes into a consistent object.
-        // Expected: story text + optional image_url + optional id + location.
-        // We'll accept: {story, image_url, id, location} or {text, ...} or nested variants.
-        const obj = (data && typeof data === 'object') ? data : {};
-        const story =
-          obj.story ?? obj.text ?? obj.content ?? obj.result ?? obj.output ?? obj.generated_story ?? '';
-
-        const image_url =
-          obj.image_url ?? obj.imageUrl ?? obj.image ?? (obj.media && obj.media.image_url) ?? null;
-
-        const id =
-          obj.id ?? obj.story_id ?? obj.storyId ?? (obj.story && obj.story.id) ?? null;
-
-        const location =
-          obj.location ?? obj.place ?? obj.setting ?? null;
-
-        const created_at =
-          obj.created_at ?? obj.createdAt ?? obj.timestamp ?? null;
-
-        return {
-          id: id,
-          location: location,
-          story: story,
-          image_url: image_url,
-          created_at: created_at
-        };
-      }
-
-      function formatMeta(created_at) {
-        if (!created_at) return '';
-        const d = new Date(created_at);
-        if (isNaN(d.getTime())) return '';
-        return d.toLocaleString();
-      }
-
-      function renderLatestStory(storyObj, fallbackLocation) {
-        const location = storyObj.location || fallbackLocation || '';
-        const storyText = storyObj.story || '';
-
-        latestLocation.textContent = location ? `Location: ${location}` : 'Location: (unspecified)';
-        latestStory.textContent = storyText ? storyText : 'No story text returned.';
-
-        const meta = formatMeta(storyObj.created_at);
-        latestMeta.textContent = meta;
-
-        if (storyObj.image_url) {
-          latestImage.src = storyObj.image_url;
-          latestImage.classList.remove('d-none');
-        } else {
-          latestImage.removeAttribute('src');
-          latestImage.classList.add('d-none');
-        }
-
-        // Enable share/report if we have an id
-        if (storyObj.id) {
-          latestActions.classList.remove('d-none');
-          latestActions.dataset.storyId = storyObj.id;
-        } else {
-          latestActions.classList.add('d-none');
-          latestActions.dataset.storyId = '';
-        }
-
-        resultPlaceholder.classList.add('d-none');
-        resultArea.classList.remove('d-none');
-      }
-
-      function renderStoriesList(items) {
-        storiesList.innerHTML = '';
-
-        if (!Array.isArray(items) || items.length === 0) {
-          storiesEmpty.classList.remove('d-none');
-          return;
-        }
-
-        storiesEmpty.classList.add('d-none');
-
-        for (const raw of items) {
-          const st = normalizeStoryPayload(raw);
-          const id = st.id ?? raw?.id ?? raw?.story_id ?? null;
-          const location = st.location ?? raw?.location ?? '';
-          const story = st.story ?? '';
-          const imageUrl = st.image_url ?? null;
-          const created = formatMeta(st.created_at ?? raw?.created_at ?? raw?.createdAt ?? raw?.timestamp);
-
-          const col = document.createElement('div');
-          col.className = 'col-12';
-
-          const card = document.createElement('div');
-          card.className = 'story-card rounded-4';
-
-          const body = document.createElement('div');
-          body.className = 'p-3 p-md-4';
-
-          const top = document.createElement('div');
-          top.className = 'd-flex flex-column flex-md-row justify-content-between gap-2 mb-2';
-
-          const title = document.createElement('div');
-          title.className = 'fw-semibold';
-          title.textContent = location ? location : '(Unknown location)';
-
-          const meta = document.createElement('div');
-          meta.className = 'story-meta';
-          meta.textContent = created || (id ? `ID: ${id}` : '');
-
-          top.appendChild(title);
-          top.appendChild(meta);
-
-          const text = document.createElement('div');
-          text.className = 'story-text';
-          text.textContent = story ? story : 'No story text.';
-
-          body.appendChild(top);
-          body.appendChild(text);
-
-          card.appendChild(body);
-
-          if (imageUrl) {
-            const img = document.createElement('img');
-            img.className = 'story-image';
-            img.alt = 'Generated horror illustration';
-            img.src = imageUrl;
-            card.appendChild(img);
-          }
-
-          // Optional per-card actions if id exists
-          if (id) {
-            const actionsWrap = document.createElement('div');
-            actionsWrap.className = 'px-3 px-md-4 pb-3 pb-md-4 pt-0';
-
-            const actions = document.createElement('div');
-            actions.className = 'card-actions d-flex flex-wrap gap-2';
-
-            const share = document.createElement('button');
-            share.type = 'button';
-            share.className = 'btn btn-sm btn-outline-light muted-border';
-            share.textContent = 'Share';
-            share.addEventListener('click', () => shareStory(id));
-
-            const report = document.createElement('button');
-            report.type = 'button';
-            report.className = 'btn btn-sm btn-outline-danger';
-            report.textContent = 'Report';
-            report.addEventListener('click', () => reportStory(id));
-
-            actions.appendChild(share);
-            actions.appendChild(report);
-            actionsWrap.appendChild(actions);
-            card.appendChild(actionsWrap);
-          }
-
-          col.appendChild(card);
-          storiesList.appendChild(col);
-        }
-      }
-
-      async function fetchJson(url, options = {}) {
-        const opts = {
-          headers: {
-            'Accept': 'application/json',
-            ...(options.headers || {})
-          },
-          ...options
-        };
-
-        let res;
-        try {
-          res = await fetch(url, opts);
-        } catch (err) {
-          throw new Error('Network error. Please check your connection and try again.');
-        }
-
-        let text = '';
-        try { text = await res.text(); } catch (_) {}
-
-        let data = null;
-        if (text) {
-          try { data = JSON.parse(text); } catch (_) { data = text; }
-        }
-
-        if (!res.ok) {
-          const msg = (data && typeof data === 'object' && (data.error || data.message))
-            ? (data.error || data.message)
-            : (typeof data === 'string' && data.trim() ? data : `Request failed (${res.status}).`);
-          throw new Error(msg);
-        }
-
-        return data;
-      }
-
-      // --- API Actions ---
-      async function checkHealth() {
-        try {
-          await fetchJson(API.health, { method: 'GET' });
-          healthPill.textContent = 'API online';
-          healthPill.style.borderColor = 'rgba(34,197,94,.35)';
-          healthPill.style.color = 'rgba(209,250,229,.95)';
-          healthPill.style.background = 'rgba(34,197,94,.12)';
-        } catch (_) {
-          healthPill.textContent = 'API unavailable';
-          healthPill.style.borderColor = 'rgba(239,68,68,.35)';
-          healthPill.style.color = 'rgba(254,226,226,.95)';
-          healthPill.style.background = 'rgba(239,68,68,.12)';
-        }
-      }
-
-      let suggestAbort = null;
-      async function loadSuggestions(q) {
-        if (!q || q.trim().length < 2) {
-          suggestionsList.innerHTML = '';
-          return;
-        }
-
-        if (suggestAbort) suggestAbort.abort();
-        suggestAbort = new AbortController();
-
-        const params = new URLSearchParams({ q: q.trim() });
-        const url = `${API.suggest}?${params.toString()}`;
-
-        try {
-          const data = await fetchJson(url, { method: 'GET', signal: suggestAbort.signal });
-          const list = Array.isArray(data) ? data : (data?.suggestions || data?.locations || []);
-          suggestionsList.innerHTML = '';
-          (list || []).slice(0, 12).forEach(item => {
-            const opt = document.createElement('option');
-            opt.value = String(item);
-            suggestionsList.appendChild(opt);
-          });
-        } catch (err) {
-          // Suggestions are optional; fail silently unless it’s not an abort and user expects feedback.
-          if (err && String(err.message || '').includes('aborted')) return;
-        }
-      }
-
-      async function generateStory(location) {
-        setGenerating(true);
-        try {
-          const payload = { location: location };
-          const data = await fetchJson(API.generate, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-          });
-
-          const storyObj = normalizeStoryPayload(data);
-          renderLatestStory(storyObj, location);
-          showToast('Story generated.');
-          await loadStories();
-        } catch (err) {
-          const msg = err?.message || 'Something went wrong while generating your story.';
-          showToast(msg);
-        } finally {
-          setGenerating(false);
-        }
-      }
-
-      async function loadStories() {
-        storiesError.classList.add('d-none');
-        storiesError.textContent = '';
-        setStoriesLoading(true);
-
-        try {
-          const data = await fetchJson(API.stories, { method: 'GET' });
-          const items = Array.isArray(data) ? data : (data?.stories || data?.items || []);
-          renderStoriesList(items);
-        } catch (err) {
-          storiesList.innerHTML = '';
-          storiesEmpty.classList.add('d-none');
-          storiesError.textContent = err?.message || 'Unable to load previous stories.';
-          storiesError.classList.remove('d-none');
-        } finally {
-          setStoriesLoading(false);
-        }
-      }
-
-      async function shareStory(storyId) {
-        if (!storyId) return;
-        try {
-          const data = await fetchJson(API.share(storyId), { method: 'POST' });
-          const url = (data && typeof data === 'object' && (data.url || data.share_url || data.link)) ? (data.url || data.share_url || data.link) : null;
-
-          if (url && typeof url === 'string') {
-            try {
-              await navigator.clipboard.writeText(url);
-              showToast('Share link copied to clipboard.');
-            } catch (_) {
-              showToast('Share link generated. (Clipboard permission denied.)');
-            }
-            window.open(url, '_blank', 'noopener');
-          } else {
-            showToast('Story shared.');
-          }
-        } catch (err) {
-          showToast(err?.message || 'Unable to share this story right now.');
-        }
-      }
-
-      async function reportStory(storyId) {
-        if (!storyId) return;
-        const ok = confirm('Report this story for review?');
-        if (!ok) return;
-
-        try {
-          await fetchJson(API.report(storyId), { method: 'POST' });
-          showToast('Reported. Thank you for helping keep things safe.');
-        } catch (err) {
-          showToast(err?.message || 'Unable to report this story right now.');
-        }
-      }
-
-      // --- Events ---
-      generatorForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-
-        // Client-side validation
-        const val = (locationInput.value || '').trim();
-        if (!val) {
-          locationInput.classList.add('is-invalid');
-          locationInput.focus();
-          return;
-        }
-        locationInput.classList.remove('is-invalid');
-
-        generateStory(val);
+      // Newest first if possible (created_at descending)
+      arr.sort((a, b) => {
+        const ac = (a && typeof a.created_at === 'number') ? a.created_at : -Infinity;
+        const bc = (b && typeof b.created_at === 'number') ? b.created_at : -Infinity;
+        return bc - ac;
       });
 
-      locationInput.addEventListener('input', () => {
-        const val = (locationInput.value || '').trim();
-        if (val) locationInput.classList.remove('is-invalid');
-        loadSuggestions(val);
+      for (const raw of arr) {
+        const s = normalizeStory(raw);
+        const col = document.createElement('div');
+        col.className = 'col-12 col-md-6 col-xl-4';
+
+        const meta = [];
+        if (s.created_at !== null && s.created_at !== undefined) meta.push(formatMeta(s.created_at));
+        if (s.id !== null && s.id !== undefined && s.id !== '') meta.push(`ID: ${String(s.id)}`);
+
+        const imgHtml = s.image_url
+          ? `<img src="${escapeHtml(s.image_url)}" class="story-img mb-3" alt="Generated horror scene" loading="lazy">`
+          : '';
+
+        col.innerHTML = `
+          <div class="card h-100">
+            <div class="card-header">
+              <div class="meta">${escapeHtml(meta.join(' • ') || 'Story')}</div>
+            </div>
+            <div class="card-body">
+              ${imgHtml}
+              <div class="story-text">${escapeHtml(s.story || '(No story returned.)')}</div>
+            </div>
+          </div>
+        `;
+        els.historyGrid.appendChild(col);
+      }
+    }
+
+    async function fetchJson(url, options = {}) {
+      const res = await fetch(url, {
+        ...options,
+        headers: {
+          'Accept': 'application/json',
+          ...(options.headers || {})
+        }
       });
 
-      refreshStoriesBtn.addEventListener('click', () => {
-        loadStories();
-      });
+      const contentType = res.headers.get('content-type') || '';
+      const isJson = contentType.includes('application/json');
 
-      shareBtn.addEventListener('click', () => {
-        const id = latestActions.dataset.storyId;
-        shareStory(id);
-      });
+      let data = null;
+      if (isJson) {
+        try { data = await res.json(); } catch { data = null; }
+      } else {
+        try { data = await res.text(); } catch { data = null; }
+      }
 
-      reportBtn.addEventListener('click', () => {
-        const id = latestActions.dataset.storyId;
-        reportStory(id);
-      });
+      if (!res.ok) {
+        const msg = (data && typeof data === 'object' && (data.error || data.message))
+          ? (data.error || data.message)
+          : (typeof data === 'string' && data.trim() ? data.trim() : `Request failed (${res.status})`);
+        throw new Error(msg);
+      }
 
-      // --- Init ---
-      (async function init() {
-        await checkHealth();
-        await loadStories();
-      })();
+      return data;
+    }
+
+    async function loadHistory() {
+      try {
+        els.refreshHistoryBtn.disabled = true;
+        const stories = await fetchJson('/api/stories', { method: 'GET' });
+        renderHistory(stories);
+      } catch (err) {
+        renderHistory([]);
+        showAlert(`Could not load story history. ${err?.message ? err.message : 'Please try again.'}`, 'warning');
+      } finally {
+        els.refreshHistoryBtn.disabled = false;
+      }
+    }
+
+    async function checkHealth() {
+      try {
+        await fetch('/health', { method: 'GET' });
+        els.healthPill.classList.add('status-ok');
+        els.healthPill.classList.remove('status-bad');
+        els.healthText.textContent = 'Service online';
+      } catch {
+        els.healthPill.classList.add('status-bad');
+        els.healthPill.classList.remove('status-ok');
+        els.healthText.textContent = 'Service unreachable';
+      }
+    }
+
+    let suggestAbort = null;
+    let suggestDebounce = null;
+
+    function hideSuggestions() {
+      els.suggestionsBox.classList.add('d-none');
+      els.suggestionsList.innerHTML = '';
+    }
+
+    function showSuggestions(items) {
+      const list = Array.isArray(items) ? items : [];
+      els.suggestionsList.innerHTML = '';
+
+      if (!list.length) {
+        hideSuggestions();
+        return;
+      }
+
+      for (const s of list.slice(0, 8)) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'list-group-item list-group-item-action';
+        btn.textContent = String(s);
+        btn.addEventListener('click', () => {
+          els.locationInput.value = String(s);
+          hideSuggestions();
+          els.locationInput.focus();
+        });
+        els.suggestionsList.appendChild(btn);
+      }
+
+      els.suggestionsBox.classList.remove('d-none');
+    }
+
+    async function suggestLocations(q) {
+      if (suggestAbort) suggestAbort.abort();
+      suggestAbort = new AbortController();
+
+      const url = '/api/locations/suggest?q=' + encodeURIComponent(q);
+      const data = await fetchJson(url, { method: 'GET', signal: suggestAbort.signal });
+      const suggestions = data && Array.isArray(data.suggestions) ? data.suggestions : [];
+      showSuggestions(suggestions);
+    }
+
+    els.locationInput.addEventListener('input', () => {
+      els.locationInput.classList.remove('is-invalid');
+      clearAlert();
+
+      const q = els.locationInput.value.trim();
+      if (suggestDebounce) clearTimeout(suggestDebounce);
+
+      if (!q) {
+        hideSuggestions();
+        return;
+      }
+
+      suggestDebounce = setTimeout(async () => {
+        try {
+          await suggestLocations(q);
+        } catch (err) {
+          // If aborted, ignore; otherwise hide suggestions quietly
+          if (err && (err.name === 'AbortError' || String(err.message || '').includes('aborted'))) return;
+          hideSuggestions();
+        }
+      }, 200);
+    });
+
+    els.locationInput.addEventListener('blur', () => {
+      // Small delay to allow click on a suggestion
+      setTimeout(() => hideSuggestions(), 150);
+    });
+
+    els.locationInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') hideSuggestions();
+    });
+
+    els.genForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      clearAlert();
+
+      const location = els.locationInput.value.trim();
+      if (!location) {
+        els.locationInput.classList.add('is-invalid');
+        showAlert('Please enter a location before generating.', 'warning');
+        return;
+      }
+
+      hideSuggestions();
+      setGenerating(true);
+
+      try {
+        const payload = { location };
+        const data = await fetchJson('/api/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (!data || typeof data !== 'object') {
+          throw new Error('Unexpected response from server.');
+        }
+
+        renderLatest(data);
+        await loadHistory();
+      } catch (err) {
+        showAlert(err?.message ? err.message : 'Something went wrong while generating your story. Please try again.', 'danger');
+      } finally {
+        setGenerating(false);
+      }
+    });
+
+    els.refreshHistoryBtn.addEventListener('click', async () => {
+      clearAlert();
+      await loadHistory();
+    });
+
+    // Initial load
+    (async function init() {
+      await checkHealth();
+      await loadHistory();
     })();
   </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 </body>
 </html>
