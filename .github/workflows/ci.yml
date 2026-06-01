@@ -7,10 +7,10 @@ on:
     branches: ["main"]
 
 jobs:
-  lint:
+  lint-and-test:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Set up Python 3.11
@@ -18,20 +18,27 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install flake8
-        run: pip install flake8
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8 pytest flask flask-cors
 
-      - name: Run flake8
-        run: flake8 Task1/artifacts/app/flask/main.py --ignore=E302,E401,E402,E501,F401,F403,F405,W292,W503
+      - name: Lint
+        run: |
+          flake8 Task1/artifacts/app/flask/main.py --ignore=E302,E401,E402,E501,F401,F403,F405,W292,W503
+
+      - name: Test
+        run: |
+          pytest Task1/artifacts/app/flask/test_app.py -v
 
   build-and-push:
-    needs: lint
+    needs: lint-and-test
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Log in to GHCR
@@ -44,7 +51,7 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Lowercase repository owner
+      - name: Lowercase owner
         run: echo "OWNER_LC=${OWNER,,}" >> $GITHUB_ENV
         env:
           OWNER: ${{ github.repository_owner }}
